@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35327.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpHunter", "SharpHunter.csproj", "{98011BED-2C0D-4388-8E32-898B92EDC24D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{98011BED-2C0D-4388-8E32-898B92EDC24D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98011BED-2C0D-4388-8E32-898B92EDC24D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98011BED-2C0D-4388-8E32-898B92EDC24D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98011BED-2C0D-4388-8E32-898B92EDC24D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {842A873D-56BF-4742-B41E-FEAD30A1151F}
+	EndGlobalSection
+EndGlobal

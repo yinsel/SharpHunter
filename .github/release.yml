@@ -1,0 +1,113 @@
+name: Build and Release SharpHunter
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.1
+
+      # 验证 Hunter.ico 是否存在
+      - name: Verify Icon Path
+        shell: powershell
+        run: |
+          $iconPath = "${{ github.workspace }}/SharpHunter/Hunter.ico"
+          if (-Not (Test-Path -Path $iconPath)) {
+            Write-Error "Icon file not found at $iconPath"
+            exit 1
+          }
+          Write-Output "Icon file exists at $iconPath"
+
+      # 编译项目并指定图标
+      - name: Compile with Icon
+        working-directory: SharpHunter
+        run: |
+          msbuild SharpHunter.sln /p:Configuration=Release /p:ApplicationIcon="Hunter.ico"
+
+      # 确保编译输出存在
+      - name: Verify Build Output
+        working-directory: SharpHunter
+        shell: powershell
+        run: |
+          $exePath = "bin/Release/SharpHunter.exe"
+          if (-Not (Test-Path -Path $exePath)) {
+            Write-Error "Build output $exePath not found."
+            exit 1
+          }
+          Write-Output "$exePath found successfully."
+
+      # 将编译好的 exe 复制到 BOF 目录
+      - name: Copy exe to BOF folder
+        working-directory: SharpHunter
+        shell: powershell
+        run: |
+          Copy-Item -Path "bin/Release/SharpHunter.exe" -Destination "BOF" -Force
+          Write-Output "SharpHunter.exe copied to BOF folder."
+
+      # 安装 7-Zip PowerShell 模块
+      - name: Install 7-Zip PowerShell Module
+        shell: powershell
+        run: |
+          Install-Module 7Zip4PowerShell -Force -Verbose
+
+      # 创建 ZIP 文件，包含 BOF 目录及文件
+      - name: Build Artifact (ZIP)
+        working-directory: SharpHunter
+        shell: powershell
+        run: |
+          $outputZip = "${{ github.workspace }}/SharpHunterBOF.zip"
+          # 清理旧 ZIP 文件
+          if (Test-Path -Path $outputZip) {
+            Remove-Item -Path $outputZip -Force
+            Write-Output "Old zip file removed."
+          }
+          # 使用 7-Zip 压缩 BOF 目录
+          Compress-7Zip -Path "BOF" -ArchiveFileName $outputZip -Format Zip
+          Write-Output "Artifact created at $outputZip"
+
+      # 创建 GitHub Release
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: "SharpHunter ${{ github.ref_name }}"
+          body: "Automated build and release of SharpHunter."
+          draft: false
+          prerelease: false
+
+      # 上传单独的 EXE 文件
+      - name: Upload EXE to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: SharpHunter/bin/Release/SharpHunter.exe
+          asset_name: SharpHunter.exe
+          asset_content_type: application/octet-stream
+
+      # 上传压缩包 ZIP 文件
+      - name: Upload ZIP to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: SharpHunterBOF.zip
+          asset_name: SharpHunterBOF.zip
+          asset_content_type: application/zip

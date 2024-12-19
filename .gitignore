@@ -4,6 +4,7 @@
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
 # User-specific files
+**/.DS_Store
 *.rsuser
 *.suo
 *.user
@@ -98,6 +99,8 @@ StyleCopReport.xml
 *.svclog
 *.scc
 
+# 但不排除 dist/ 目录及其子目录中的 .obj 文件
+!SharpHunter/BOF/dist/**/*.obj
 # Chutzpah Test files
 _Chutzpah*
 
