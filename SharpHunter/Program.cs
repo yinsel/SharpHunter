@@ -62,6 +62,9 @@ namespace SharpHunter
             {
                 Logger.WriteLine($"\n{ex.Message}");
                 CommonUtils.DisplayHelp();
+            } catch (Exception ex)
+            {
+                Logger.WriteLine($"\n{ex.Message}");
             }
 
             if (commandParsedArgs.LogEnabled)

@@ -170,36 +170,53 @@ namespace SharpHunter.Commands
             {
                 // 当前用户 mstsc 缓存连接记录
                 rk = Registry.Users.OpenSubKey(baseKey + "Default");
-                foreach (string mru in rk.GetValueNames())
+                if (rk != null)
                 {
-                    string port = "";
-                    string value = rk.GetValue(mru).ToString();
-                    string address = value.Split(':')[0];
-                    if (value.Contains(":"))
+                    foreach (string mru in rk.GetValueNames())
                     {
-                        port = value.Split(':')[1];
-                    }
-                    values.Add(address, new Out(port, ""));
-                }
-                rk.Close();
-
-                // 当前用户 cmdkey 缓存记录 
-                rk = Registry.Users.OpenSubKey(baseKey + "Servers");
-                string[] addresses = rk.GetSubKeyNames();
-                rk.Close();
-                foreach (string address in addresses)
-                {
-                    rk = Registry.Users.OpenSubKey($@"{baseKey}Servers\{address}");
-                    string user = rk.GetValue("UsernameHint").ToString();
-                    if (values.ContainsKey(address))
-                    {
-                        values[address].username = user;
+                        string port = "";
+                        string value = rk.GetValue(mru).ToString();
+                        string address = value.Split(':')[0];
+                        if (value.Contains(":"))
+                        {
+                            port = value.Split(':')[1];
+                        }
+                        if (!values.ContainsKey(address))
+                        {
+                            values.Add(address, new Out(port, ""));
+                        }
                     }
                     rk.Close();
                 }
+
+
+                // 当前用户 cmdkey 缓存记录 
+                string[] addresses = { };
+                rk = Registry.Users.OpenSubKey(baseKey + "Servers");
+                if (rk != null)
+                {
+                    addresses = rk.GetSubKeyNames();
+                    rk.Close();
+                }
+       
+                foreach (string address in addresses)
+                {
+                    rk = Registry.Users.OpenSubKey($@"{baseKey}Servers\{address}");
+                    if (rk != null)
+                    {
+                        string user = rk.GetValue("UsernameHint").ToString();
+                        if (values.ContainsKey(address))
+                        {
+                            values[address].username = user;
+                        }
+                        rk.Close();
+                    }
+     
+                }
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.WriteLine($"ex: {ex}");
             }
 
             return values;
